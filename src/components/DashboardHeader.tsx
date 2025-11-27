@@ -12,14 +12,24 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { LogOut, User, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 export const DashboardHeader = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    toast.success("Logged out successfully");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Failed to log out");
+    }
+  };
+
+  const getInitials = (email: string) => {
+    return email.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -32,7 +42,7 @@ export const DashboardHeader = () => {
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-primary text-primary-foreground">
-                  JD
+                  {user ? getInitials(user.email || '') : 'U'}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -40,8 +50,8 @@ export const DashboardHeader = () => {
           <DropdownMenuContent className="w-56" align="end">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">John Doe</p>
-                <p className="text-xs text-muted-foreground">john@example.com</p>
+                <p className="text-sm font-medium">{user?.email?.split('@')[0] || 'User'}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
