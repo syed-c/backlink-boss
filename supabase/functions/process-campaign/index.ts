@@ -259,7 +259,15 @@ serve(async (req) => {
       status: campaign.status,
       website_id: campaign.website_id,
       total_backlinks: campaign.total_backlinks,
-      indexed_backlinks: campaign.indexed_backlinks
+      indexed_backlinks: campaign.indexed_backlinks,
+      category: campaign.category,
+      keyword_1: campaign.keyword_1,
+      keyword_2: campaign.keyword_2,
+      keyword_3: campaign.keyword_3,
+      keyword_4: campaign.keyword_4,
+      keyword_5: campaign.keyword_5,
+      location: campaign.location,
+      company_name: campaign.company_name
     });
     
     // Check if campaign is already running
@@ -448,6 +456,39 @@ serve(async (req) => {
       websiteId: campaign.website_id,
       campaignName: campaign.name
     });
+    
+    // Log the campaign object being sent
+    console.log('Campaign object being sent to generate-heading:', {
+      id: campaign.id,
+      category: campaign.category,
+      keyword_1: campaign.keyword_1,
+      keyword_2: campaign.keyword_2,
+      keyword_3: campaign.keyword_3,
+      keyword_4: campaign.keyword_4,
+      keyword_5: campaign.keyword_5,
+      location: campaign.location,
+      company_name: campaign.company_name
+    });
+    
+    // Check if campaign is defined
+    if (!campaign) {
+      console.error('Campaign is undefined before sending to generate-heading');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Campaign is undefined before sending to generate-heading' 
+      }), { status: 500, headers: corsHeaders });
+    }
+    
+    // Check if campaign has required fields
+    const requiredFields = ['category', 'keyword_1', 'keyword_2', 'keyword_3', 'keyword_4', 'keyword_5', 'location'];
+    const missingFields = requiredFields.filter(field => !campaign[field]);
+    if (missingFields.length > 0) {
+      console.error('Campaign is missing required fields before sending to generate-heading:', missingFields);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `Campaign is missing required fields before sending to generate-heading: ${missingFields.join(', ')}` 
+      }), { status: 500, headers: corsHeaders });
+    }
     
     let headingData = null;
     let headingError = null;

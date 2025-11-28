@@ -51,6 +51,10 @@ Deno.serve(async (req) => {
 
     const { campaign, websiteId } = body;
     
+    console.log('Received campaign object keys:', Object.keys(campaign || {}));
+    console.log('Received campaign object:', campaign);
+    console.log('Received websiteId:', websiteId);
+    
     if (!campaign) {
       console.error('Missing campaign data in request');
       return new Response(JSON.stringify({ error: 'Missing campaign data' }), { status: 400, headers: corsHeaders });
@@ -83,6 +87,17 @@ Deno.serve(async (req) => {
     // Validate campaign has required fields
     const requiredFields = ['category', 'keyword_1', 'keyword_2', 'keyword_3', 'keyword_4', 'keyword_5', 'location'];
     const missingFields = requiredFields.filter(field => !campaign[field]);
+    
+    console.log('Campaign fields check:', {
+      hasCategory: !!campaign.category,
+      hasKeyword1: !!campaign.keyword_1,
+      hasKeyword2: !!campaign.keyword_2,
+      hasKeyword3: !!campaign.keyword_3,
+      hasKeyword4: !!campaign.keyword_4,
+      hasKeyword5: !!campaign.keyword_5,
+      hasLocation: !!campaign.location,
+      missingFields: missingFields
+    });
     
     if (missingFields.length > 0) {
       console.error('Campaign missing required fields:', missingFields);
