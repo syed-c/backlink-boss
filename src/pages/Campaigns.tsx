@@ -68,7 +68,7 @@ const Campaigns = () => {
       console.log('Calling process-campaign function with campaignId:', campaignId);
       // Trigger the process-campaign function using Supabase client
       const functionParams = {
-        body: { campaignId }
+        body: JSON.stringify({ campaignId })
       };
       console.log('Function params:', functionParams);
       
@@ -156,7 +156,7 @@ const Campaigns = () => {
     try {
       // Call the reset-campaign function
       const { data, error } = await supabase.functions.invoke('reset-campaign', {
-        body: { campaignId }
+        body: JSON.stringify({ campaignId })
       });
 
       if (error) {
@@ -191,7 +191,7 @@ const Campaigns = () => {
     try {
       // Call the reset-campaign function
       const { data, error } = await supabase.functions.invoke('reset-campaign', {
-        body: { campaignId }
+        body: JSON.stringify({ campaignId })
       });
 
       if (error) {

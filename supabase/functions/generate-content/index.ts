@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -75,7 +74,7 @@ function cleanHTML(html: string): string {
   return html.trim();
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   console.log('Generate content function invoked');
   
   if (req.method === 'OPTIONS') {

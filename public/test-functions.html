@@ -40,10 +40,10 @@
                 };
 
                 const { data, error } = await supabase.functions.invoke('generate-heading', {
-                    body: {
+                    body: JSON.stringify({
                         campaign: mockCampaign,
                         websiteId: 'test-website-id'
-                    }
+                    })
                 });
                 document.getElementById('output').innerHTML = `<pre>${JSON.stringify({ data, error }, null, 2)}</pre>`;
             } catch (err) {
@@ -73,9 +73,9 @@
                 document.getElementById('output').innerHTML = `<pre>Processing campaign: ${campaignId}</pre>`;
 
                 const { data, error } = await supabase.functions.invoke('process-campaign', {
-                    body: {
+                    body: JSON.stringify({
                         campaignId: campaignId
-                    }
+                    })
                 });
                 document.getElementById('output').innerHTML += `<pre>${JSON.stringify({ data, error }, null, 2)}</pre>`;
             } catch (err) {

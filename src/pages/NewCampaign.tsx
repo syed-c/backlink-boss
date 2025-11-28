@@ -172,7 +172,7 @@ const NewCampaign = () => {
         // Automatically start campaign processing
         try {
           const { data, error } = await supabase.functions.invoke('process-campaign', {
-            body: { campaignId: campaignDataResponse.id }
+            body: JSON.stringify({ campaignId: campaignDataResponse.id })
           });
 
           if (error) throw new Error(error.message);
@@ -249,7 +249,7 @@ const NewCampaign = () => {
           // Automatically start campaign processing
           try {
             const { data, error } = await supabase.functions.invoke('process-campaign', {
-              body: { campaignId: retryData.id }
+              body: JSON.stringify({ campaignId: retryData.id })
             });
 
             if (error) throw new Error(error.message);

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -6,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   console.log('Process campaign function invoked');
   console.log('Request method:', req.method);
   console.log('Request URL:', req.url);
@@ -494,11 +493,26 @@ serve(async (req) => {
     let headingError = null;
     
     try {
-      console.log('About to invoke generate-heading function...');
+      console.log('About to invoke generate-heading function with payload:', { 
+        campaign,
+        websiteId: campaign.website_id 
+      });
+      
+      // Debug logs as suggested
+      console.log('FUNCTION URL:', Deno.env.get('SUPABASE_URL'));
+      console.log('CALLING generate-heading:', JSON.stringify({ 
+        campaign,
+        websiteId: campaign.website_id 
+      }));
+      
+      // Using supabase.functions.invoke instead of direct fetch to avoid '[object Object]' errors
       const result = await supabase.functions.invoke('generate-heading', {
-        body: { 
+        body: JSON.stringify({ 
           campaign,
           websiteId: campaign.website_id 
+        }),
+        headers: {
+          "Content-Type": "application/json"
         }
       });
       console.log('Generate-heading function invocation result:', result);
@@ -534,12 +548,35 @@ serve(async (req) => {
       throw new Error(`Heading generation failed: ${headingError.message || headingError}`);
     }
     
+    // Log the raw result for debugging
+    console.log('Raw headingData:', headingData);
+    console.log('headingData type:', typeof headingData);
+    
     if (!headingData) {
       console.error('Heading generation returned no data');
       throw new Error('Heading generation returned no data');
     }
     
+    // Check if headingData is an object and has a heading property
+    if (typeof headingData !== 'object' || headingData === null) {
+      console.error('Heading generation returned invalid data type:', typeof headingData, headingData);
+      throw new Error(`Heading generation returned invalid data type: ${typeof headingData}`);
+    }
+    
+    // Check if heading property exists
+    if (!Object.prototype.hasOwnProperty.call(headingData, 'heading')) {
+      console.error('Heading generation returned data without heading property:', headingData);
+      throw new Error('Heading generation returned data without heading property');
+    }
+    
     const { heading } = headingData;
+    
+    // Validate that heading is a non-empty string
+    if (typeof heading !== 'string' || heading.trim() === '') {
+      console.error('Heading generation returned invalid heading:', heading);
+      throw new Error('Heading generation returned invalid heading');
+    }
+    
     console.log('Heading generated successfully:', heading);
     
     console.log('Generating content...');
@@ -552,11 +589,15 @@ serve(async (req) => {
     
     let contentData, contentError;
     try {
+      // Using supabase.functions.invoke instead of direct fetch to avoid '[object Object]' errors
       const result = await supabase.functions.invoke('generate-content', {
-        body: { 
+        body: JSON.stringify({ 
           campaign,
           heading,
           backlinks: availableBacklinks 
+        }),
+        headers: {
+          "Content-Type": "application/json"
         }
       });
       contentData = result.data;
