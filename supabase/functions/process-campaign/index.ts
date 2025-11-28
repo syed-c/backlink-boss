@@ -478,9 +478,13 @@ serve(async (req) => {
       console.error('Heading generation failed:', headingError);
       // Update campaign status to failed
       try {
+        const errorMessage = headingError.message || String(headingError);
         await supabase
           .from('campaigns')
-          .update({ status: 'failed' })
+          .update({ 
+            status: 'failed',
+            error_message: `Heading generation failed: ${errorMessage}`
+          })
           .eq('id', campaignId);
         console.log('Campaign status updated to failed');
       } catch (updateError) {
@@ -525,11 +529,15 @@ serve(async (req) => {
     if (contentError) {
       console.error('Content generation failed:', contentError);
       // Update campaign status to failed
+      const errorMessage = contentError.message || String(contentError);
       await supabase
         .from('campaigns')
-        .update({ status: 'failed' })
+        .update({ 
+          status: 'failed',
+          error_message: `Content generation failed: ${errorMessage}`
+        })
         .eq('id', campaignId);
-      throw new Error(`Content generation failed: ${contentError.message || contentError}`);
+      throw new Error(`Content generation failed: ${errorMessage}`);
     }
     
     const { content } = contentData;
