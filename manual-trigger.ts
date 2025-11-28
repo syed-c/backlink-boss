@@ -51,10 +51,10 @@ async function manualTrigger(campaignId: string) {
     };
     
     const { data: headingData, error: headingError } = await supabase.functions.invoke('generate-heading', {
-      body: JSON.stringify({ 
+      body: { 
         campaign: testCampaign,
         websiteId: 'test-website-id'
-      })
+      }
     });
     
     console.log('Generate heading response:', { headingData, headingError });
@@ -62,7 +62,7 @@ async function manualTrigger(campaignId: string) {
     // Test debug-campaign function
     console.log(`\n=== TESTING DEBUG-CAMPAIGN FUNCTION ===`);
     const { data: debugData, error: debugError } = await supabase.functions.invoke('debug-campaign', {
-      body: JSON.stringify({ campaignId })
+      body: { campaignId }
     });
     
     console.log('Debug campaign response:', { debugData, debugError });
@@ -98,7 +98,7 @@ async function manualTrigger(campaignId: string) {
     console.log('Triggering process-campaign function...');
     
     const { data, error } = await supabase.functions.invoke('process-campaign', {
-      body: JSON.stringify({ campaignId })
+      body: { campaignId }
     });
     
     console.log('Function response:', { data, error });

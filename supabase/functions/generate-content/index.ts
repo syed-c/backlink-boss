@@ -82,14 +82,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Parsing request body...');
+    // Handle request body properly (Supabase may have already parsed it)
     let requestBody;
     try {
+      const text = await req.text();
+      console.log("RAW BODY:", text);
+      requestBody = JSON.parse(text);
+    } catch (e) {
+      console.error("Body was already parsed, using directly");
       requestBody = await req.json();
-      console.log('Request body parsed successfully:', requestBody);
-    } catch (parseError) {
-      console.error('Failed to parse request body:', parseError);
-      throw new Error('Invalid request body format');
     }
     
     const { campaign, heading, backlinks } = requestBody;

@@ -505,14 +505,11 @@ Deno.serve(async (req) => {
         websiteId: campaign.website_id 
       }));
       
-      // Using supabase.functions.invoke instead of direct fetch to avoid '[object Object]' errors
+      // Calling generate-heading function with raw object (Supabase automatically stringifies)
       const result = await supabase.functions.invoke('generate-heading', {
-        body: JSON.stringify({ 
+        body: { 
           campaign,
           websiteId: campaign.website_id 
-        }),
-        headers: {
-          "Content-Type": "application/json"
         }
       });
       console.log('Generate-heading function invocation result:', result);
@@ -589,15 +586,12 @@ Deno.serve(async (req) => {
     
     let contentData, contentError;
     try {
-      // Using supabase.functions.invoke instead of direct fetch to avoid '[object Object]' errors
+      // Calling generate-content function with raw object (Supabase automatically stringifies)
       const result = await supabase.functions.invoke('generate-content', {
-        body: JSON.stringify({ 
+        body: { 
           campaign,
           heading,
           backlinks: availableBacklinks 
-        }),
-        headers: {
-          "Content-Type": "application/json"
         }
       });
       contentData = result.data;

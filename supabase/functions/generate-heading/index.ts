@@ -46,9 +46,17 @@ Deno.serve(async (req) => {
       return new Response(null, { headers: corsHeaders });
     }
 
-    const body = await req.json();
-    console.log("body:", body);
-
+    // Handle request body properly (Supabase may have already parsed it)
+    let body;
+    try {
+      const text = await req.text();
+      console.log("RAW BODY:", text);
+      body = JSON.parse(text);
+    } catch (e) {
+      console.error("Body was already parsed, using directly");
+      body = await req.json();
+    }
+    
     const { campaign, websiteId } = body;
     
     console.log('Received campaign object keys:', Object.keys(campaign || {}));

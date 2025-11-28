@@ -34,10 +34,10 @@ serve(async (req) => {
     );
 
     const { data, error } = await supabase.functions.invoke('generate-heading', {
-      body: JSON.stringify({
+      body: {
         campaign: mockCampaign,
         websiteId: 'test-website-id'
-      })
+      }
     });
 
     if (error) {

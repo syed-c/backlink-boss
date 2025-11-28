@@ -77,7 +77,7 @@ const CampaignDetails = () => {
 
       // Trigger the process-campaign function using Supabase client
       const { data, error } = await supabase.functions.invoke('process-campaign', {
-        body: JSON.stringify({ campaignId: id })
+        body: { campaignId: id }
       });
 
       if (error) throw new Error(error.message);

@@ -108,7 +108,7 @@ const Websites = () => {
       // Call the Supabase function to test the connection
       console.log("Testing WordPress connection to:", url);
       const { data, error } = await supabase.functions.invoke('test-wp-connection', {
-        body: JSON.stringify({ url, username, password })
+        body: { url, username, password }
       });
 
       if (error) {

@@ -66,10 +66,10 @@ serve(async (req) => {
     // Test calling generate-heading function
     console.log('Calling generate-heading function...');
     const { data: headingData, error: headingError } = await supabase.functions.invoke('generate-heading', {
-      body: JSON.stringify({ 
+      body: { 
         campaign,
         websiteId: campaign.website_id 
-      })
+      }
     });
 
     if (headingError) {
