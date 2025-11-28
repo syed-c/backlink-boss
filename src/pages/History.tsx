@@ -1,37 +1,67 @@
+import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, ExternalLink, Calendar, Link2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Tables } from "@/integrations/supabase/types";
 
 const History = () => {
-  const history = [
-    {
-      id: 1,
-      heading: "Top Exhibition Stand Builders in Dubai",
-      website: "explore-dubai.com",
-      indexedUrl: "https://explore-dubai.com/blog/top-exhibition-stands",
-      backlinksCount: 5,
-      createdAt: "2024-01-20",
-    },
-    {
-      id: 2,
-      heading: "How to Choose an Exhibition Stand Contractor in Oman",
-      website: "oman-booths.com",
-      indexedUrl: "https://oman-booths.com/blog/choose-contractor",
-      backlinksCount: 7,
-      createdAt: "2024-01-19",
-    },
-    {
-      id: 3,
-      heading: "Exhibition Booth Design Trends in Saudi Arabia",
-      website: "sa-contractors.com",
-      indexedUrl: "https://sa-contractors.com/blog/design-trends",
-      backlinksCount: 3,
-      createdAt: "2024-01-18",
-    },
-  ];
+  const { user } = useAuth();
+  const [history, setHistory] = useState<Tables<"index_history">[]>([]);
+  const [filteredHistory, setFilteredHistory] = useState<Tables<"index_history">[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchHistory = useCallback(async () => {
+    if (!user) return;
+
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('index_history')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching history:', error);
+    } else {
+      setHistory(data || []);
+      setFilteredHistory(data || []);
+    }
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchHistory();
+    }
+  }, [user, fetchHistory]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = history.filter(item => 
+        item.heading.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.indexed_url.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredHistory(filtered);
+    } else {
+      setFilteredHistory(history);
+    }
+  }, [searchTerm, history]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -49,12 +79,14 @@ const History = () => {
               <Input
                 placeholder="Search by heading or URL..."
                 className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {history.map((item) => (
+              {filteredHistory.map((item) => (
                 <div
                   key={item.id}
                   className="p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors"
@@ -65,22 +97,24 @@ const History = () => {
                       <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Badge variant="outline" className="text-xs">
-                            {item.website}
+                            Website ID: {item.website_id}
                           </Badge>
                         </span>
                         <span className="flex items-center gap-1">
                           <Link2 className="h-3 w-3" />
-                          {item.backlinksCount} backlinks
+                          {item.backlinks_count} backlinks
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(item.createdAt).toLocaleDateString()}
+                          {item.created_at 
+                            ? new Date(item.created_at).toLocaleDateString()
+                            : 'Unknown'}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <a
-                        href={item.indexedUrl}
+                        href={item.indexed_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1 text-sm text-primary hover:underline"

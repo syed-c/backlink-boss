@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Function Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Function Test</h1>
+    <button id="testEnv">Test Environment Variables</button>
+    <button id="testHeading">Test Generate Heading</button>
+    <button id="testProcess">Test Process Campaign</button>
+    <div id="output"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://qqqudnynjmjdutvebpdw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxcXVkbnluam1qZHV0dmVicGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI1NTk1MTcsImV4cCI6MjA0ODEzNTUxN30.AHYF1EhW443bP1sNhT6xuP1sNhT6xuP1sNhT6xuP1sN';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        document.getElementById('testEnv').addEventListener('click', async () => {
+            try {
+                const { data, error } = await supabase.functions.invoke('test-env');
+                document.getElementById('output').innerHTML = `<pre>${JSON.stringify({ data, error }, null, 2)}</pre>`;
+            } catch (err) {
+                document.getElementById('output').innerHTML = `<pre>Error: ${err.message}</pre>`;
+            }
+        });
+
+        document.getElementById('testHeading').addEventListener('click', async () => {
+            try {
+                const mockCampaign = {
+                    id: 'test-campaign-id',
+                    category: 'Plumbing',
+                    location: 'Dubai',
+                    company_name: 'Test Company',
+                    keyword_1: 'emergency plumber',
+                    keyword_2: 'plumbing repair',
+                    keyword_3: 'water heater',
+                    keyword_4: 'drain cleaning',
+                    keyword_5: 'leak detection'
+                };
+
+                const { data, error } = await supabase.functions.invoke('generate-heading', {
+                    body: {
+                        campaign: mockCampaign,
+                        websiteId: 'test-website-id'
+                    }
+                });
+                document.getElementById('output').innerHTML = `<pre>${JSON.stringify({ data, error }, null, 2)}</pre>`;
+            } catch (err) {
+                document.getElementById('output').innerHTML = `<pre>Error: ${err.message}</pre>`;
+            }
+        });
+
+        document.getElementById('testProcess').addEventListener('click', async () => {
+            try {
+                // First, let's get a real campaign ID from the database
+                const { data: campaigns, error: campaignError } = await supabase
+                    .from('campaigns')
+                    .select('id')
+                    .limit(1);
+
+                if (campaignError) {
+                    document.getElementById('output').innerHTML = `<pre>Campaign fetch error: ${JSON.stringify(campaignError, null, 2)}</pre>`;
+                    return;
+                }
+
+                if (!campaigns || campaigns.length === 0) {
+                    document.getElementById('output').innerHTML = `<pre>No campaigns found</pre>`;
+                    return;
+                }
+
+                const campaignId = campaigns[0].id;
+                document.getElementById('output').innerHTML = `<pre>Processing campaign: ${campaignId}</pre>`;
+
+                const { data, error } = await supabase.functions.invoke('process-campaign', {
+                    body: {
+                        campaignId: campaignId
+                    }
+                });
+                document.getElementById('output').innerHTML += `<pre>${JSON.stringify({ data, error }, null, 2)}</pre>`;
+            } catch (err) {
+                document.getElementById('output').innerHTML = `<pre>Error: ${err.message}</pre>`;
+            }
+        });
+    </script>
+</body>
+</html>
